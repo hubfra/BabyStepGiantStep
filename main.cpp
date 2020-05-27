@@ -23,39 +23,34 @@ int main()
 }
 
 
-struct HashSet
-{
-	int64_t index = -1;
-	std::vector<int64_t> hashes;
-};
-
 int64_t BabyStepGiantStep(int64_t base, int64_t modulus, int64_t result)
 {
 	int64_t m = static_cast<int64_t>(ceil(sqrt(modulus)));
-	std::vector<HashSet> hash_sets(m);
+	std::vector<std::vector<std::pair<int64_t, int64_t>>> hashes(m);
 
 	for (int j = 0; j < m; ++j) {
-		int64_t mod = ModPow(base, j, modulus);
-		hash_sets[mod % m].hashes.push_back(mod);
+		int64_t reminder = ModPow(base, j, modulus);
+		hashes[reminder % m].push_back({ reminder, j });
 	}
 
 	int64_t v = ModPow(InvMod(base, modulus), m, modulus);
 	int64_t d = result;
+	int64_t hash, index;
 
 	for (int i = 0; i < m; ++i) {
-		int64_t hash = d % modulus;
-		int64_t index = hash % m;
+		hash = d % modulus;
+		index = hash % m;
 
-		for (int64_t p : hash_sets[index].hashes) {
-			if (p == hash) {
-				return i * m + hash_sets[index].index;
+		for (auto& pair : hashes[index]) {
+			if (pair.first == hash) {
+				return i * m + pair.second;
 			}
 		}
 
 		d = (d % modulus) * v;
 	}
 
-	return 0;
+	return -1;
 }
 
 int64_t ModPow(int64_t base, int64_t exponent, int64_t modulus)
